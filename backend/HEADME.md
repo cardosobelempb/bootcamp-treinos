@@ -60,6 +60,8 @@ npm install fastify@5.7.4
 npm install dotenv@17.3.1
 npm install zod@4.3.6 fastify-type-provider-zod@6.1.0
 npm install @fastify/swagger@9.7.0 @fastify/swagger-ui@5.2.5
+npm i @fastify/cors@11.2.0
+npm i @scalar/fastify-api-reference@1.44.20
 ```
 
 ---
@@ -68,6 +70,7 @@ npm install @fastify/swagger@9.7.0 @fastify/swagger-ui@5.2.5
 
 ```bash
 npm install better-auth@1.4.18
+npx @better-auth/cli@1.4.18 generate
 ```
 
 > Better Auth será responsável por:

@@ -2,12 +2,12 @@
 import "dotenv/config";
 import Fastify from "fastify";
 
-import fastifySwagger from "@fastify/swagger";
-import fastifySwaggerUI from "@fastify/swagger-ui";
+import fastifyApiReference from "@scalar/fastify-api-reference";
 
 import { z } from "zod/v4";
 
 import { fastifyCors } from "@fastify/cors";
+import fastifySwagger from "@fastify/swagger";
 import {
   jsonSchemaTransform,
   serializerCompiler,
@@ -20,37 +20,67 @@ const app = Fastify({
   logger: true,
 });
 
+const PORT = process.env.PORT || 3333;
+
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
 await app.register(fastifySwagger, {
   openapi: {
     info: {
-      title: "Bootcamp Treinamento Backend",
-      description: "API para o Bootcamp Treinamento Backend",
+      title: "Bootcamp Treinos API",
+      description: "API para o bootcamp de treinos do FSC",
       version: "1.0.0",
     },
     servers: [
       {
-        description: "Servidor local",
-        url: "http://localhost:3333",
+        description: "Localhost",
+        url: `http://localhost:${PORT}`,
       },
     ],
   },
   transform: jsonSchemaTransform,
 });
 
-await app.register(fastifySwaggerUI, {
-  routePrefix: "/docs",
+await app.register(fastifyCors, {
+  origin: ["http://localhost:3000"],
+  credentials: true,
 });
 
-const PORT = Number(process.env.PORT || 3333);
+await app.register(fastifyApiReference, {
+  routePrefix: "/docs",
+  configuration: {
+    sources: [
+      {
+        title: "Bootcamp Treinos API",
+        slug: "bootcamp-treinos-api",
+        url: "/swagger.json",
+      },
+      {
+        title: "Auth API",
+        slug: "auth-api",
+        url: "/api/auth/open-api/generate-schema",
+      },
+    ],
+  },
+});
+
+app.withTypeProvider<ZodTypeProvider>().route({
+  method: "GET",
+  url: "/swagger.json",
+  schema: {
+    hide: true,
+  },
+  handler: async () => {
+    return app.swagger();
+  },
+});
 
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",
   url: "/",
   schema: {
-    description: "Returns a greeting message",
+    description: "Hello world",
     tags: ["Hello World"],
     response: {
       200: z.object({
@@ -58,19 +88,13 @@ app.withTypeProvider<ZodTypeProvider>().route({
       }),
     },
   },
-  handler: async (request, reply) => {
-    return { message: "Hello, world!" };
+  handler: () => {
+    return {
+      message: "Hello World",
+    };
   },
 });
 
-await app.register(fastifyCors, {
-  origin: "[http://localhost:3000]", // Allow requests from this origin
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true, // Allow cookies and credentials
-});
-
-// Register authentication endpoint
 app.route({
   method: ["GET", "POST"],
   url: "/api/auth/*",
@@ -97,8 +121,7 @@ app.route({
       response.headers.forEach((value, key) => reply.header(key, value));
       reply.send(response.body ? await response.text() : null);
     } catch (error) {
-      app.log.error({ err: error }, "Authentication Error");
-
+      app.log.error({ error }, "Authentication error");
       reply.status(500).send({
         error: "Internal authentication error",
         code: "AUTH_FAILURE",
