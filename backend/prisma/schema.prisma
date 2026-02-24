@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id String @id
 
   name          String
   email         String
@@ -37,7 +37,7 @@ model WorkoutPlan {
   name     String
   isActive Boolean @default(true) @map("is_active")
 
-  userId String @map("user_id") @db.Uuid
+  userId String @map("user_id") 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime  @default(now()) @map("created_at")
@@ -96,14 +96,14 @@ model WorkoutExercise {
 }
 
 model Session {
-  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id        String @id
   expiresAt DateTime
   token     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
-  userId    String @map("user_id") @db.Uuid
+  userId    String @map("user_id") 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
@@ -112,10 +112,10 @@ model Session {
 }
 
 model Account {
-  id                    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                    String @id
   accountId             String
   providerId            String
-  userId                String @map("user_id") @db.Uuid
+  userId                String @map("user_id")
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
@@ -132,7 +132,7 @@ model Account {
 }
 
 model Verification {
-  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id         String @id
   identifier String
   value      String
   expiresAt  DateTime
