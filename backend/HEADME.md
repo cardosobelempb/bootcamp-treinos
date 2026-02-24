@@ -95,6 +95,7 @@ Inicializar:
 ```bash
 npx prisma init
 npx prisma push
+npx prisma db generate
 ```
 
 ---

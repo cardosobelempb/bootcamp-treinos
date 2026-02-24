@@ -1,23 +1,34 @@
-import { PrismaPg } from "@prisma/adapter-pg";
+// auth.ts
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { openAPI } from "better-auth/plugins";
-import { PrismaClient } from "../generated/prisma/client.js";
-// If your Prisma file is located elsewhere, you can change the path
 
-const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
-});
+import { env } from "../utils/env.js";
+import { prisma } from "./database.js";
 
+/**
+ * Configuração central de autenticação.
+ * Responsável apenas por configurar o provider.
+ */
 export const auth = betterAuth({
-  trustedOrigins: ["http://localhost:3000"],
+  // Origens confiáveis para cookies e segurança
+  trustedOrigins: [
+    "http://localhost:3000",
+    "http://localhost:5173", // Vite (corrige seu erro de cookie)
+  ],
+
   emailAndPassword: {
     enabled: true,
   },
-  secret: process.env.BETTER_AUTH_SECRET,
-  url: process.env.BETTER_AUTH_URL,
+
+  // Segurança
+  secret: env.BETTER_AUTH_SECRET,
+  url: env.BETTER_AUTH_URL,
+
+  // Integração com banco via Prisma
   database: prismaAdapter(prisma, {
-    provider: "postgresql", // or "mysql", "postgresql", ...etc
+    provider: "postgresql",
   }),
+
   plugins: [openAPI()],
 });
