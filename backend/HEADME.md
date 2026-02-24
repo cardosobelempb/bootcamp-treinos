@@ -34,4 +34,6 @@ npm install fastify@5.7.4
 npm i dotenv@17.3.1
 
 npm i zod@4.3.6 fastify-type-provider-zod@6.1.0
+
+npm i @fastify/swagger@9.7.0 @fastify/swagger-ui@5.2.5
 ```

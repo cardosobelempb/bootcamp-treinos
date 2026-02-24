@@ -2,9 +2,13 @@
 import "dotenv/config";
 import Fastify from "fastify";
 
+import fastifySwagger from "@fastify/swagger";
+import fastifySwaggerUI from "@fastify/swagger-ui";
+
 import { z } from "zod/v4";
 
 import {
+  jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
   ZodTypeProvider,
@@ -17,6 +21,27 @@ const app = Fastify({
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
+await app.register(fastifySwagger, {
+  openapi: {
+    info: {
+      title: "Bootcamp Treinamento Backend",
+      description: "API para o Bootcamp Treinamento Backend",
+      version: "1.0.0",
+    },
+    servers: [
+      {
+        description: "Servidor local",
+        url: "http://localhost:3333",
+      },
+    ],
+  },
+  transform: jsonSchemaTransform,
+});
+
+await app.register(fastifySwaggerUI, {
+  routePrefix: "/docs",
+});
+
 const PORT = Number(process.env.PORT || 3333);
 
 app.withTypeProvider<ZodTypeProvider>().route({
@@ -24,7 +49,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
   url: "/",
   schema: {
     description: "Returns a greeting message",
-    tags: ["greeting"],
+    tags: ["Hello World"],
     response: {
       200: z.object({
         message: z.string(),
