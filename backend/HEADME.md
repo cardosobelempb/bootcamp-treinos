@@ -32,4 +32,6 @@ npm create @eslint/config@1.11.0
 ```ts
 npm install fastify@5.7.4
 npm i dotenv@17.3.1
+
+npm i zod@4.3.6 fastify-type-provider-zod@6.1.0
 ```
