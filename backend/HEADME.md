@@ -1,3 +1,5 @@
+## start da api
+
 ```ts
 npm init
 npm i typescript@5.9.3 @types/node@24 -D
@@ -23,4 +25,11 @@ npm create @eslint/config@1.11.0
 - npm
 
 
+```
+
+## start da api
+
+```ts
+npm install fastify@5.7.4
+npm i dotenv@17.3.1
 ```
