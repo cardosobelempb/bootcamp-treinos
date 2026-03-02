@@ -22,7 +22,7 @@ Transformo seu negócio em um Sistema Online Profissional 🍔
 ✔ Pedidos Organizados
 ✔ Link próprio na Bio
 ✔ Aplicativo automático
-🎁 5 dias grátis para testar
+🎁 7 dias grátis para testar
 📩 Fale comigo
 
 ---
@@ -63,7 +63,7 @@ Vou criar 3 versões para você escolher o posicionamento 👇
 📲 Cardápio Digital + Pedidos no WhatsApp
 💳 Pagamento via PIX
 📈 Aumente suas vendas com sua própria plataforma
-🎁 Teste grátis por 5 dias
+🎁 Teste grátis por 7 dias
 👇 Solicite demonstração
 
 ---
@@ -75,7 +75,7 @@ Transformo seu negócio em um Sistema Online Profissional 🍔
 ✔ Pedidos Organizados
 ✔ Link próprio na Bio
 ✔ Aplicativo automático
-🎁 5 dias grátis para testar
+🎁 7 dias grátis para testar
 📩 Fale comigo
 
 ---
@@ -85,7 +85,7 @@ Transformo seu negócio em um Sistema Online Profissional 🍔
 Soluções Digitais para Negócios de Alimentação
 Cardápios Online • Pagamentos PIX • Marketplace
 Autonomia, organização e crescimento
-Experimente gratuitamente por 5 dias
+Experimente gratuitamente por 7 dias
 Atendimento personalizado 👇
 
 ---
@@ -123,7 +123,7 @@ Simples • Rápido • Organizado
 ✔ Pedidos direto no WhatsApp
 ✔ Banner promocional
 
-🎁 Teste grátis por 5 dias
+🎁 Teste grátis por 7 dias
 
 ---
 
@@ -176,7 +176,7 @@ Seu negócio pode ter:
 
 Tudo simples e profissional.
 
-🎁 Libero 5 dias gratuitos para você testar.
+🎁 Libero 7 dias gratuitos para você testar.
 
 Comente **“DEMO”** ou envie mensagem no direct.
 
