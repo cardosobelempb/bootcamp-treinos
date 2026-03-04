@@ -64,6 +64,7 @@ model WorkoutDay {
   name    String
   isRest  Boolean @default(false) @map("is_rest")
   weekDay WeekDay
+  estimatedDurationInSeconds Int @map("estimated_duration_in_seconds")
 
   workoutPlanId String      @map("workout_plan_id") @db.Uuid
   workoutPlan   WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
