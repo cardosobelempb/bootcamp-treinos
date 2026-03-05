@@ -6,7 +6,7 @@ import { NotFoundError } from "../erros/index.js";
 import { WeekDay } from "../generated/prisma/enums.js";
 import { auth } from "../lib/auth.js";
 import { fastifyToFetch } from "../lib/fastifyFetch.js";
-import { CreateWorkoutPlan } from "../useCases/workout-plan/CreateWorkoutPlan.js";
+import { CreateWorkoutPlanUseCase } from "../useCases/workout-plan/CreateWorkoutPlanUseCase.js";
 
 export async function workoutPlansRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -18,9 +18,9 @@ export async function workoutPlansRoutes(app: FastifyInstance) {
         workoutDays: z.array(
           z.object({
             name: z.string().min(1).max(100),
-            weekDay: z.enum(WeekDay),
+            weekDay: z.enum(WeekDay), // 🔥 corrigido
             isRest: z.boolean().default(false),
-            estimatedDurationInSeconds: z.number().int().positive().max(1440),
+            estimatedDurationInSeconds: z.number().int().positive().max(86400),
             exercises: z.array(
               z.object({
                 name: z.string().min(1).max(100),
@@ -75,12 +75,16 @@ export async function workoutPlansRoutes(app: FastifyInstance) {
           });
         }
 
-        const createWorkoutPlan = new CreateWorkoutPlan();
+        const createWorkoutPlan = new CreateWorkoutPlanUseCase();
 
         const result = await createWorkoutPlan.execute({
           userId: session.user.id,
           name: request.body.name,
           workoutDays: request.body.workoutDays,
+        });
+
+        console.log("Workout plan created successfully", {
+          workoutPlanId: result.id,
         });
 
         return reply.status(201).send({
@@ -89,6 +93,7 @@ export async function workoutPlansRoutes(app: FastifyInstance) {
           workoutDays: result.workoutDays,
         });
       } catch (error) {
+        console.error("FULL ERROR:", error);
         app.log.error({ error }, "Workout plan creation error");
 
         if (error instanceof z.ZodError) {

@@ -73,7 +73,7 @@ model WorkoutDay {
   updatedAt DateTime? @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  workoutExercises WorkoutExercise[]
+  exercises WorkoutExercise[]
 
   @@map("workout_day")
 }
