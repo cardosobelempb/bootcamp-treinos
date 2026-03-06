@@ -99,6 +99,7 @@ export class CreateWorkoutPlanUseCase {
    */
   private mapToPersistence(dto: CreateWorkoutPlanInputDTO) {
     return {
+      id: crypto.randomUUID(),
       userId: dto.userId,
       name: dto.name,
       isActive: true,

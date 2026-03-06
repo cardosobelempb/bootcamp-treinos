@@ -64,7 +64,7 @@ await app.register(fastifyApiReference, {
 // Rotas base
 await helloRoutes(app);
 await authRoutes(app);
-await workoutPlansRoutes(app);
+await app.register(workoutPlansRoutes, { prefix: "/api/workout-plans" });
 
 // Swagger JSON route
 app.withTypeProvider<ZodTypeProvider>().route({

@@ -20,16 +20,16 @@ model User {
   email         String
   emailVerified Boolean   @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt DateTime?  @map("deleted_at")
+  createdAt     DateTime  @default(now()) @db.Timestamptz
+  updatedAt     DateTime  @updatedAt @db.Timestamptz
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz
 
   workoutPlans WorkoutPlan[]
-  sessions      Session[]
-  accounts      Account[]
+  sessions     Session[]
+  accounts     Account[]
 
-  @@map("user")
   @@unique([email])
+  @@map("user")
 }
 
 model WorkoutPlan {
@@ -37,12 +37,12 @@ model WorkoutPlan {
   name     String
   isActive Boolean @default(true) @map("is_active")
 
-  userId String @map("user_id") 
+  userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
 
   workoutDays WorkoutDay[]
 
@@ -60,18 +60,20 @@ enum WeekDay {
 }
 
 model WorkoutDay {
-  id      String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name    String
-  isRest  Boolean @default(false) @map("is_rest")
-  weekDay WeekDay
-  estimatedDurationInSeconds Int @map("estimated_duration_in_seconds")
+  id                         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                       String
+  isRest                     Boolean @default(false) @map("is_rest")
+  weekDay                    WeekDay
+  estimatedDurationInSeconds Int     @map("estimated_duration_in_seconds")
 
   workoutPlanId String      @map("workout_plan_id") @db.Uuid
   workoutPlan   WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  sessions WorkoutSession[]
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
 
   exercises WorkoutExercise[]
 
@@ -89,22 +91,37 @@ model WorkoutExercise {
   workoutDayId String     @map("workout_day_id") @db.Uuid
   workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
 
   @@map("workout_exercise")
 }
 
+model WorkoutSession {
+  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  durationInSeconds Int        @map("duration_in_seconds")
+  workoutDayId      String     @map("workout_day_id") @db.Uuid
+  workoutDay        WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  startedAt         DateTime   @map("start_date") @db.Timestamptz
+  completedAt       DateTime?  @map("completed_at") @db.Timestamptz
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+
+  @@map("workout_session")
+}
+
 model Session {
-  id        String @id
-  expiresAt DateTime
+  id        String   @id
+  expiresAt DateTime @db.Timestamptz
   token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
   ipAddress String?
   userAgent String?
-  userId    String @map("user_id") 
+  userId    String   @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
@@ -113,32 +130,32 @@ model Session {
 }
 
 model Account {
-  id                    String @id
+  id                    String    @id
   accountId             String
   providerId            String
-  userId                String @map("user_id")
+  userId                String    @map("user_id")
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
+  accessTokenExpiresAt  DateTime? @db.Timestamptz
+  refreshTokenExpiresAt DateTime? @db.Timestamptz
   scope                 String?
   password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  createdAt             DateTime  @default(now()) @db.Timestamptz
+  updatedAt             DateTime  @updatedAt @db.Timestamptz
 
   @@index([userId])
   @@map("account")
 }
 
 model Verification {
-  id         String @id
+  id         String   @id
   identifier String
   value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  expiresAt  DateTime @db.Timestamptz
+  createdAt  DateTime @default(now()) @db.Timestamptz
+  updatedAt  DateTime @updatedAt @db.Timestamptz
 
   @@index([identifier])
   @@map("verification")
