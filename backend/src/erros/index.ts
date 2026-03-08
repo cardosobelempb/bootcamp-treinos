@@ -11,3 +11,24 @@ export class ValidationError extends Error {
     this.name = "ValidationError";
   }
 }
+
+export class UnauthorizedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UnauthorizedError";
+  }
+}
+
+export class WorkoutPlanNotActiveError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "WorkoutPlanNotActiveError";
+  }
+}
+
+export class SessionAlreadyStartedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SessionAlreadyStartedError";
+  }
+}

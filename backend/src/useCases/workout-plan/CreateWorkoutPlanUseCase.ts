@@ -1,5 +1,6 @@
 import { WeekDay } from "@prisma/client";
 import { NotFoundError } from "../../erros/index.js";
+import { WorkoutExercise } from "../../generated/prisma/browser.js";
 import { prisma } from "../../lib/database.js";
 
 /**
@@ -141,9 +142,9 @@ export class CreateWorkoutPlanUseCase {
         weekDay: day.weekDay,
         isRest: day.isRest,
         estimatedDurationInSeconds: day.estimatedDurationInSeconds,
-        exercises: day.exercises.map((exercise: any) => ({
-          order: exercise.order,
+        exercises: day.exercises.map((exercise: WorkoutExercise) => ({
           name: exercise.name,
+          order: exercise.order,
           sets: exercise.sets,
           reps: exercise.reps,
           restTimeInSeconds: exercise.restTimeInSeconds,
@@ -151,27 +152,4 @@ export class CreateWorkoutPlanUseCase {
       })),
     };
   }
-
-  /**
-   * Mapeia entidade do banco para DTO de saída
-   */
-  // private mapToOutput(plan: any): CreateWorkoutPlanOutputDTO {
-  //   return {
-  //     id: plan.id,
-  //     name: plan.name,
-  //     workoutDays: (plan.workoutDays ?? []).map((day: any) => ({
-  //       name: day.name,
-  //       weekDay: day.weekDay,
-  //       isRest: day.isRest,
-  //       estimatedDurationInSeconds: day.estimatedDurationInSeconds,
-  //       exercises: (day.workoutExercises ?? []).map((exercise: any) => ({
-  //         order: exercise.order,
-  //         name: exercise.name,
-  //         sets: exercise.sets,
-  //         reps: exercise.reps,
-  //         restTimeInSeconds: exercise.restTimeInSeconds,
-  //       })),
-  //     })),
-  //   };
-  // }
 }

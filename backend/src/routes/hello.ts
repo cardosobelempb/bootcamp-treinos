@@ -7,6 +7,8 @@ export async function helloRoutes(app: FastifyInstance) {
     method: "GET",
     url: "/",
     schema: {
+      tag: ["Hello World"],
+      summary: "Retorna uma mensagem de saudação",
       description: "Hello World route",
       tags: ["Hello World"],
       response: { 200: z.object({ message: z.string() }) },
