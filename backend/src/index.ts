@@ -12,6 +12,8 @@ import {
 import fastifyApiReference from "@scalar/fastify-api-reference";
 import { authRoutes } from "./routes/auth.js";
 import { helloRoutes } from "./routes/hello.js";
+import { default as statsRoutes } from "./routes/stats.js";
+import registerUserTrainRoutes from "./routes/userTrainData.js";
 import { workoutPlansRoutes } from "./routes/workout-plans/index.js";
 
 const PORT = Number(process.env.PORT) || 3333;
@@ -65,6 +67,8 @@ await app.register(fastifyApiReference, {
 await helloRoutes(app);
 await authRoutes(app);
 await app.register(workoutPlansRoutes, { prefix: "/api/workout-plans" });
+await app.register(statsRoutes, { prefix: "/api/stats" });
+await app.register(registerUserTrainRoutes, { prefix: "/api/user" });
 
 // Swagger JSON route
 app.withTypeProvider<ZodTypeProvider>().route({

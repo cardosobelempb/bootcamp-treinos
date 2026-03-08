@@ -27,9 +27,26 @@ model User {
   workoutPlans WorkoutPlan[]
   sessions     Session[]
   accounts     Account[]
+  userTrainData UserTrainData?
 
   @@unique([email])
   @@map("user")
+}
+
+model UserTrainData {
+  userId String @id @map("user_id")
+
+  weightInGrams Int @map("weight_in_grams")
+  heightInCentimeters Int @map("height_in_centimeters")
+  age Int
+  bodyFatPercentage Float @map("body_fat_percentage")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("user_train_data")
 }
 
 model WorkoutPlan {
