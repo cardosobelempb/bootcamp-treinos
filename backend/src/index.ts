@@ -12,7 +12,7 @@ import {
 import fastifyApiReference from "@scalar/fastify-api-reference";
 import { authRoutes } from "./routes/auth.js";
 import { helloRoutes } from "./routes/hello.js";
-import { workoutPlansRoutes } from "./routes/workout-plans.js";
+import { workoutPlansRoutes } from "./routes/workout-plans.router.js";
 
 const PORT = Number(process.env.PORT) || 3333;
 

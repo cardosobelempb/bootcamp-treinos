@@ -33,9 +33,10 @@ model User {
 }
 
 model WorkoutPlan {
-  id       String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name     String
-  isActive Boolean @default(true) @map("is_active")
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  coverImageUrl String? @map("cover_image_url")
+  isActive      Boolean @default(true) @map("is_active")
 
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -65,6 +66,7 @@ model WorkoutDay {
   isRest                     Boolean @default(false) @map("is_rest")
   weekDay                    WeekDay
   estimatedDurationInSeconds Int     @map("estimated_duration_in_seconds")
+  coverImageUrl                String? @map("cover_image_url")
 
   workoutPlanId String      @map("workout_plan_id") @db.Uuid
   workoutPlan   WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)

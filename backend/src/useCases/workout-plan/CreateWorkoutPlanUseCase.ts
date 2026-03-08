@@ -9,6 +9,7 @@ export interface CreateWorkoutPlanInputDTO {
   userId: string;
   name: string;
   workoutDays: WorkoutDayInput[];
+  coverImageUrl?: string;
 }
 
 /**
@@ -17,6 +18,7 @@ export interface CreateWorkoutPlanInputDTO {
 export interface CreateWorkoutPlanOutputDTO {
   id: string;
   name: string;
+  coverImageUrl?: string;
   workoutDays: WorkoutDayOutput[];
 }
 
@@ -26,6 +28,7 @@ export interface CreateWorkoutPlanOutputDTO {
 interface WorkoutDayInput {
   name: string;
   weekDay: WeekDay;
+  coverImageUrl?: string;
   isRest: boolean;
   estimatedDurationInSeconds: number;
   exercises: ExerciseInput[];
@@ -99,14 +102,15 @@ export class CreateWorkoutPlanUseCase {
    */
   private mapToPersistence(dto: CreateWorkoutPlanInputDTO) {
     return {
-      id: crypto.randomUUID(),
       userId: dto.userId,
       name: dto.name,
+      coverImageUrl: dto.coverImageUrl,
       isActive: true,
       workoutDays: {
         create: dto.workoutDays.map((day) => ({
           name: day.name,
           weekDay: day.weekDay,
+          coverImageUrl: day.coverImageUrl,
           isRest: day.isRest,
           estimatedDurationInSeconds: day.estimatedDurationInSeconds,
           exercises: {
@@ -124,18 +128,20 @@ export class CreateWorkoutPlanUseCase {
   }
 
   /**
-   * Mapeia entidade do banco para DTO de saída
+   * Mapeia resultado do Prisma para DTO de saída
    */
-  private mapToOutput(plan: any): CreateWorkoutPlanOutputDTO {
+  private mapToOutput(data: any): CreateWorkoutPlanOutputDTO {
     return {
-      id: plan.id,
-      name: plan.name,
-      workoutDays: (plan.workoutDays ?? []).map((day: any) => ({
+      id: data.id,
+      name: data.name,
+      coverImageUrl: data.coverImageUrl ?? undefined,
+      workoutDays: data.workoutDays.map((day: any) => ({
         name: day.name,
+        coverImageUrl: day.coverImageUrl ?? undefined,
         weekDay: day.weekDay,
         isRest: day.isRest,
         estimatedDurationInSeconds: day.estimatedDurationInSeconds,
-        exercises: (day.workoutExercises ?? []).map((exercise: any) => ({
+        exercises: day.exercises.map((exercise: any) => ({
           order: exercise.order,
           name: exercise.name,
           sets: exercise.sets,
@@ -145,4 +151,27 @@ export class CreateWorkoutPlanUseCase {
       })),
     };
   }
+
+  /**
+   * Mapeia entidade do banco para DTO de saída
+   */
+  // private mapToOutput(plan: any): CreateWorkoutPlanOutputDTO {
+  //   return {
+  //     id: plan.id,
+  //     name: plan.name,
+  //     workoutDays: (plan.workoutDays ?? []).map((day: any) => ({
+  //       name: day.name,
+  //       weekDay: day.weekDay,
+  //       isRest: day.isRest,
+  //       estimatedDurationInSeconds: day.estimatedDurationInSeconds,
+  //       exercises: (day.workoutExercises ?? []).map((exercise: any) => ({
+  //         order: exercise.order,
+  //         name: exercise.name,
+  //         sets: exercise.sets,
+  //         reps: exercise.reps,
+  //         restTimeInSeconds: exercise.restTimeInSeconds,
+  //       })),
+  //     })),
+  //   };
+  // }
 }

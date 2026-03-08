@@ -5,8 +5,8 @@ import z from "zod";
 import { NotFoundError } from "../erros/index.js";
 import { auth } from "../lib/auth.js";
 import { fastifyToFetch } from "../lib/fastifyFetch.js";
-import { ErroSchema } from "../schemas/erros.js";
-import { WorkoutPlanSchema } from "../schemas/workplan.js";
+import { ErroSchema } from "../schemas/erros.schema.js";
+import { WorkoutPlanSchema } from "../schemas/workout-plan.schema.js";
 import { CreateWorkoutPlanUseCase } from "../useCases/workout-plan/CreateWorkoutPlanUseCase.js";
 
 export async function workoutPlansRoutes(app: FastifyInstance) {
@@ -14,7 +14,7 @@ export async function workoutPlansRoutes(app: FastifyInstance) {
     method: ["POST"],
     url: "/",
     schema: {
-      body: WorkoutPlanSchema.partial({ id: true }), // Permite omitir o ID no corpo da requisição
+      body: WorkoutPlanSchema.omit({ id: true }), // Permite omitir o ID no corpo da requisição
       response: {
         201: WorkoutPlanSchema,
         400: ErroSchema,
@@ -47,19 +47,12 @@ export async function workoutPlansRoutes(app: FastifyInstance) {
           userId: session.user.id,
           name: request.body.name,
           workoutDays: request.body.workoutDays,
+          coverImageUrl: request.body.coverImageUrl,
         });
 
-        console.log("Workout plan created successfully", {
-          workoutPlanId: result.id,
-        });
-
-        return reply.status(201).send({
-          id: result.id,
-          name: result.name,
-          workoutDays: result.workoutDays,
-        });
+        // Retorna o DTO de saída diretamente
+        return reply.status(201).send(result);
       } catch (error) {
-        console.error("FULL ERROR:", error);
         app.log.error({ error }, "Workout plan creation error");
 
         if (error instanceof z.ZodError) {
@@ -79,6 +72,21 @@ export async function workoutPlansRoutes(app: FastifyInstance) {
           code: "WORKOUT_PLAN_CREATION_FAILED",
         });
       }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: ["GET"],
+    url: "/",
+    schema: {
+      response: {
+        200: z.array(WorkoutPlanSchema),
+        401: ErroSchema,
+        500: ErroSchema,
+      },
+    },
+    async handler(request, reply) {
+      // Implementation for fetching workout plans
     },
   });
 }
