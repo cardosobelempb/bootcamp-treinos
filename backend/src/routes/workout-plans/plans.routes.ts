@@ -1,28 +1,22 @@
-// routes/auth.ts
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
-import {
-  NotFoundError,
-  SessionAlreadyStartedError,
-  UnauthorizedError,
-  WorkoutPlanNotActiveError,
-} from "../erros/index.js";
-import { auth } from "../lib/auth.js";
-import { fastifyToFetch } from "../lib/fastifyFetch.js";
-import { ErroSchema } from "../schemas/erros.schema.js";
-import { WorkoutPlanSchema } from "../schemas/workout-plan.schema.js";
-import { CreateWorkoutPlanUseCase } from "../useCases/workout-plan/CreateWorkoutPlanUseCase.js";
-import { StartWorkoutSessionUseCase } from "../useCases/workout-plan/StartWorkoutSessionUseCase.js";
+import { NotFoundError, UnauthorizedError } from "../../erros/index.js";
+import { auth } from "../../lib/auth.js";
+import { prisma } from "../../lib/database.js";
+import { fastifyToFetch } from "../../lib/fastifyFetch.js";
+import { ErroSchema } from "../../schemas/erros.schema.js";
+import { WorkoutPlanSchema } from "../../schemas/workout-plan.schema.js";
+import { CreateWorkoutPlanUseCase } from "../../useCases/workout-plan/CreateWorkoutPlanUseCase.js";
 
-export async function workoutPlansRoutes(app: FastifyInstance) {
+export function registerPlansRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().route({
     method: ["POST"],
     url: "/",
     schema: {
       tags: ["Workout Plans"],
       summary: "Cria um novo plano de treino para o usuário autenticado",
-      body: WorkoutPlanSchema.omit({ id: true }), // Permite omitir o ID no corpo da requisição
+      body: WorkoutPlanSchema.omit({ id: true }),
       response: {
         201: WorkoutPlanSchema,
         400: ErroSchema,
@@ -34,19 +28,15 @@ export async function workoutPlansRoutes(app: FastifyInstance) {
 
     async handler(request, reply) {
       try {
-        // 🔥 Converte Fastify → Fetch (mesmo padrão do authRoutes)
         const fetchRequest = fastifyToFetch(request);
-
-        // 🔥 Usa headers do Fetch diretamente
         const session = await auth.api.getSession({
           headers: fetchRequest.headers,
         });
 
         if (!session?.user) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
+          return reply
+            .status(401)
+            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
         }
 
         const createWorkoutPlan = new CreateWorkoutPlanUseCase();
@@ -58,7 +48,6 @@ export async function workoutPlansRoutes(app: FastifyInstance) {
           coverImageUrl: request.body.coverImageUrl,
         });
 
-        // Retorna o DTO de saída diretamente
         return reply.status(201).send(result);
       } catch (error) {
         app.log.error({ error }, "Workout plan creation error");
@@ -69,10 +58,9 @@ export async function workoutPlansRoutes(app: FastifyInstance) {
             code: "INVALID_REQUEST_DATA",
           });
         } else if (error instanceof NotFoundError) {
-          return reply.status(404).send({
-            error: error.message,
-            code: "WORKOUT_PLAN_NOT_FOUND",
-          });
+          return reply
+            .status(404)
+            .send({ error: error.message, code: "WORKOUT_PLAN_NOT_FOUND" });
         }
 
         return reply.status(500).send({
@@ -100,21 +88,35 @@ export async function workoutPlansRoutes(app: FastifyInstance) {
     },
   });
 
-  // POST /workout-plans/:id/days/:dayId/sessions
+  // GET /workout-plans/:id
   app.withTypeProvider<ZodTypeProvider>().route({
-    method: ["POST"],
-    url: "/:id/days/:dayId/sessions",
+    method: ["GET"],
+    url: "/:id",
     schema: {
       tags: ["Workout Plans"],
-      summary: "Inicia uma sessão de treino para um dia específico do plano",
-      params: z.object({ id: z.string().uuid(), dayId: z.string().uuid() }),
+      summary:
+        "Retorna um plano de treino com os dias (somente exercisesCount)",
+      params: z.object({ id: z.string().uuid() }),
       response: {
-        201: z.object({ userWorkoutSessionId: z.string() }),
+        200: z.object({
+          id: z.string(),
+          name: z.string(),
+          workoutDays: z.array(
+            z.object({
+              id: z.string(),
+              weekDay: z.string(),
+              name: z.string(),
+              isRest: z.boolean(),
+              coverImageUrl: z.string().nullable(),
+              estimatedDurationInSeconds: z.number().int(),
+              exercisesCount: z.number().int(),
+            }),
+          ),
+        }),
         400: ErroSchema,
         401: ErroSchema,
         403: ErroSchema,
         404: ErroSchema,
-        409: ErroSchema,
         500: ErroSchema,
       },
     },
@@ -131,17 +133,44 @@ export async function workoutPlansRoutes(app: FastifyInstance) {
             .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
         }
 
-        const startUseCase = new StartWorkoutSessionUseCase();
-
-        const result = await startUseCase.execute({
-          userId: session.user.id,
-          workoutPlanId: request.params.id,
-          workoutDayId: request.params.dayId,
+        const plan = await prisma.workoutPlan.findUnique({
+          where: { id: request.params.id },
+          include: {
+            workoutDays: {
+              include: { _count: { select: { exercises: true } } },
+            },
+          },
         });
 
-        return reply.status(201).send(result);
+        if (!plan) {
+          return reply
+            .status(404)
+            .send({ error: "Workout plan not found", code: "NOT_FOUND" });
+        }
+
+        if (plan.userId !== session.user.id) {
+          throw new UnauthorizedError(
+            "User is not the owner of the workout plan",
+          );
+        }
+
+        const result = {
+          id: plan.id,
+          name: plan.name,
+          workoutDays: plan.workoutDays.map((d) => ({
+            id: d.id,
+            weekDay: String(d.weekDay),
+            name: d.name,
+            isRest: d.isRest,
+            coverImageUrl: d.coverImageUrl ?? null,
+            estimatedDurationInSeconds: d.estimatedDurationInSeconds,
+            exercisesCount: d._count?.exercises ?? 0,
+          })),
+        };
+
+        return reply.status(200).send(result);
       } catch (error) {
-        app.log.error({ error }, "Start workout session error");
+        app.log.error({ error }, "Get workout plan error");
 
         if (error instanceof z.ZodError) {
           return reply.status(400).send({
@@ -156,19 +185,11 @@ export async function workoutPlansRoutes(app: FastifyInstance) {
           return reply
             .status(403)
             .send({ error: error.message, code: "FORBIDDEN" });
-        } else if (error instanceof WorkoutPlanNotActiveError) {
-          return reply
-            .status(409)
-            .send({ error: error.message, code: "WORKOUT_PLAN_NOT_ACTIVE" });
-        } else if (error instanceof SessionAlreadyStartedError) {
-          return reply
-            .status(409)
-            .send({ error: error.message, code: "SESSION_ALREADY_STARTED" });
         }
 
         return reply.status(500).send({
-          error: "Failed to start session",
-          code: "START_SESSION_FAILED",
+          error: "Failed to fetch workout plan",
+          code: "FETCH_WORKOUT_PLAN_FAILED",
         });
       }
     },
